@@ -1,8 +1,8 @@
 "use client";
 
-import 'viem/window'
+import "viem/window";
 import styles from "./page.module.css";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Account,
   Chain,
@@ -12,8 +12,10 @@ import {
   getAccount,
   http,
   parseEther,
+  WalletClient,
 } from "viem";
 import { mainnet } from "viem/chains";
+import { WindowProvider } from "viem/window";
 
 const requiredChainId: Chain = mainnet;
 
@@ -28,12 +30,17 @@ export default function Home() {
   const [connecting, setConnecting] = useState<boolean>(false);
   const [account, setAccount] = useState<Account>();
   const [chainId, setChainId] = useState<undefined | number>();
-  
-  const walletClient = createWalletClient({
-    chain: mainnet,
-    // @ts-expect-error
-    transport: custom(window.ethereum),
-  });
+  const [walletClient, setWalletClient] = useState<WalletClient | undefined>();
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const walletClient = createWalletClient({
+      chain: mainnet,
+      transport: custom(window.ethereum as WindowProvider),
+    });
+    setWalletClient(walletClient as WalletClient);
+  }, []);
 
   const getBlockNumber = async () => {
     const blockNumber = await client.getBlockNumber();
@@ -47,7 +54,7 @@ export default function Home() {
     setAccount(undefined);
     setConnecting(true);
 
-    const [address] = await walletClient.requestAddresses();
+    const [address] = await walletClient!.requestAddresses();
     const account = getAccount(address);
     console.log("account: ", account);
     setAccount(getAccount(address));
@@ -55,7 +62,7 @@ export default function Home() {
   };
 
   const switchNetwork = async () => {
-    await walletClient.switchChain({
+    await walletClient?.switchChain({
       id: requiredChainId.id,
     });
   };
@@ -64,7 +71,7 @@ export default function Home() {
     if (!account) return;
     const message = "gm";
 
-    const signedMessage = await walletClient.signMessage({
+    const signedMessage = await walletClient?.signMessage({
       account,
       message,
     });
@@ -75,7 +82,7 @@ export default function Home() {
 
   const sendTransaction = async () => {
     if (!account) return;
-    await walletClient.sendTransaction({
+    await walletClient?.sendTransaction({
       account,
       to: "0x0000000000000000000000000000000000000000",
       value: parseEther("0.000000"),
