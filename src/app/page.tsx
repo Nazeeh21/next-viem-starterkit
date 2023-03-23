@@ -5,6 +5,7 @@ import styles from "./page.module.css";
 import { useState } from "react";
 import {
   Account,
+  Chain,
   createPublicClient,
   createWalletClient,
   custom,
@@ -25,8 +26,10 @@ const walletClient = createWalletClient({
   transport: custom(window.ethereum),
 });
 
+const requiredChainId: Chain = mainnet;
+
 const client = createPublicClient({
-  chain: mainnet,
+  chain: requiredChainId,
   transport: http(),
   pollingInterval: 10_000,
 });
@@ -35,10 +38,12 @@ export default function Home() {
   const [blockNumber, setBlockNumber] = useState<null | number>(null);
   const [connecting, setConnecting] = useState<boolean>(false);
   const [account, setAccount] = useState<Account>();
+  const [chainId, setChainId] = useState<undefined | number>();
 
   const getBlockNumber = async () => {
     const blockNumber = await client.getBlockNumber();
     setBlockNumber(Number(blockNumber));
+    setChainId(await client.getChainId());
   };
 
   getBlockNumber();
@@ -54,6 +59,12 @@ export default function Home() {
     setConnecting(false);
   };
 
+  const switchNetwork = async () => {
+    await walletClient.switchChain({
+      id: requiredChainId.id,
+    });
+  };
+
   const signMessage = async () => {
     if (!account) return;
     const message = "gm";
@@ -64,7 +75,7 @@ export default function Home() {
     });
 
     console.log("signedMessage: ", signedMessage);
-    alert('Signed Msg: ' + signedMessage );
+    alert("Signed Msg: " + signedMessage);
   };
 
   const sendTransaction = async () => {
@@ -80,6 +91,7 @@ export default function Home() {
     <main className={styles.main}>
       <div className={styles.content}>
         <div>Nextjs 13 & Viem</div>
+        <div>Current ChainId: {chainId}</div>
         <div>
           BlockNumber: <span>{blockNumber}</span>
         </div>
@@ -89,6 +101,10 @@ export default function Home() {
           <div>Connecting...</div>
         ) : (
           <button onClick={connectWallet}>Connect Wallet</button>
+        )}
+
+        {requiredChainId.id != chainId && (
+          <button onClick={switchNetwork}>Switch network</button>
         )}
 
         {account && <button onClick={signMessage}>Sign gm message</button>}
