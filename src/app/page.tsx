@@ -1,7 +1,7 @@
 "use client";
 
+import 'viem/window'
 import styles from "./page.module.css";
-
 import { useState } from "react";
 import {
   Account,
@@ -14,11 +14,6 @@ import {
   parseEther,
 } from "viem";
 import { mainnet } from "viem/chains";
-
-const walletClient = createWalletClient({
-  chain: mainnet,
-  transport: http(process.env.NEXT_PUBLIC_INFURA_URL),
-});
 
 const requiredChainId: Chain = mainnet;
 
@@ -33,6 +28,12 @@ export default function Home() {
   const [connecting, setConnecting] = useState<boolean>(false);
   const [account, setAccount] = useState<Account>();
   const [chainId, setChainId] = useState<undefined | number>();
+  
+  const walletClient = createWalletClient({
+    chain: mainnet,
+    // @ts-expect-error
+    transport: custom(window.ethereum),
+  });
 
   const getBlockNumber = async () => {
     const blockNumber = await client.getBlockNumber();
