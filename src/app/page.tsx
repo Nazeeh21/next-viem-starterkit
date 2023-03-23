@@ -15,15 +15,9 @@ import {
 } from "viem";
 import { mainnet } from "viem/chains";
 
-declare global {
-  interface Window {
-    ethereum?: any;
-  }
-}
-
 const walletClient = createWalletClient({
   chain: mainnet,
-  transport: custom(window.ethereum),
+  transport: http(process.env.NEXT_PUBLIC_INFURA_URL),
 });
 
 const requiredChainId: Chain = mainnet;
