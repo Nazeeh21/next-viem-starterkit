@@ -22,6 +22,8 @@ The `pages/api` directory is mapped to `/api/*`. Files in this directory are tre
 
 This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
 
+> Note: Things may break and dont work as expected as both of these packages i.e. Nextjs 13 and viem are in Beta
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
